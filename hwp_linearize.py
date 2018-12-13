@@ -11,10 +11,10 @@ from scipy.constants import pi
 
 import matplotlib.pyplot as plt
 
-power = 0.5 # percent to set at
+power = 0.2 # percent to set at
 
 hwp_deflection_range = 45 # degrees the hwp has to rotate for one full power cycle
-gear_ratio = 1 # coupling ratio between servo rotation and HWP rotation
+gear_ratio = 1. # coupling ratio between servo rotation and HWP rotation
 max_deflection_angle = hwp_deflection_range * gear_ratio
 
 offset = 0 # angular offset to adjust to initial zero position

@@ -13,14 +13,16 @@ const int valpin = A0;
 
 boolean setval = LOW;
 int analogval = 0;
-int hwpangle = 0;
-int power = 100*analogval/1023;
+float hwpangle = 0;
+float power = analogval/1023.0;
 
 const int navg = 10;
 
-const int minangle = 0, maxangle = 45, offset = 0, gear_ratio;
-const int maxservoangle = maxangle*gear_ratio;
+const int minangle = 0, maxangle = 45, offset = 0;
+const float gear_ratio = 1.0;
+const float maxservoangle = maxangle*gear_ratio;
 
+const int maxpower = 600; // mW at sample at 100% power setting ==> arbitrarily set on 181213, enter actual value.
 
 void setup() {
   pinMode(setpin,INPUT);
@@ -31,8 +33,12 @@ void setup() {
 
   // set up the LCD's number of columns and rows:
   lcd.begin(16, 2);
-  // Print a message to the LCD.
-  lcd.print(power);
+  
+  lcd.clear();
+  lcd.setCursor(0,0);
+  lcd.print(String(power*100) + " %");
+  lcd.setCursor(0,1);
+  lcd.print(String(round(maxpower*power)) + " mW");
   
 }
 
@@ -59,16 +65,21 @@ void setPosition() {
 
   //hwpangle = map(analogval, 0, 1023, minangle, maxangle); // not linearized
 
-  power = 100*analogval/1023;
+  power = analogval/1023.0;
 
-  hwpangle = acos(1-2*power)*maxservoangle/PI; // linearized
+  hwpangle = (acos(1-(2*power))*(maxservoangle))/PI; // linearized
   
   hwpservo.write(offset + hwpangle);
   
   delay(250);
 
   lcd.clear();
-  lcd.print(power);
   
+  lcd.setCursor(0,0);
+  lcd.print(String(power*100) + " %");
+  lcd.setCursor(0,1);
+  lcd.print(String(round(maxpower*power)) + " mW, 181213");
+
 }
+
 
