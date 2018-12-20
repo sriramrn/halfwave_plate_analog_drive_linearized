@@ -24,6 +24,11 @@ const float maxservoangle = maxangle*gear_ratio;
 
 const int maxpower = 600; // mW at sample at 100% power setting ==> arbitrarily set on 181213, enter actual value.
 
+boolean continuous = true; //vary without set pin
+int roundto = 10;
+int prevval = 0;
+
+
 void setup() {
   pinMode(setpin,INPUT);
 
@@ -48,24 +53,33 @@ void loop() {
   setval = digitalRead(setpin);
 
   if (setval == HIGH) {
-    setPosition();
+    analogval = analogSample(navg);
+    setPosition(analogval);
+  }
+
+  if (continuous) {
+    
+    analogval = roundToNearest(analogSample(navg),roundto);
+    if (analogval > 1023) {
+      analogval = 1023;
+    }
+    
+    if (analogval != prevval) {
+      setPosition(analogval);
+    }
+    
+    prevval = analogval;
+  
   }
 
 }
 
 
-void setPosition() {
+void setPosition(int val) {
 
-  analogval = 0;
-  for (int i=0; i<navg; i++) {
-    analogval += analogRead(valpin);
-    delay(10);
-  }
-  analogval = analogval/navg;
+  //hwpangle = map(val, 0, 1023, minangle, maxangle); // not linearized
 
-  //hwpangle = map(analogval, 0, 1023, minangle, maxangle); // not linearized
-
-  power = analogval/1023.0;
+  power = val/1023.0;
 
   hwpangle = (acos(1-(2*power))*(maxservoangle))/PI; // linearized
   
@@ -82,4 +96,23 @@ void setPosition() {
 
 }
 
+
+int analogSample(int numtoavg) {
+
+  int val = 0;
+  for (int i=0; i<numtoavg; i++) {
+    val += analogRead(valpin);
+    //delay(10);
+  }
+  val = val/numtoavg;
+
+  return val;
+  
+}
+
+
+int roundToNearest(int a, int nearest)
+{
+  return a >= 0 ? (a+2)/nearest*nearest : (a-2)/nearest*nearest ;
+}
 
